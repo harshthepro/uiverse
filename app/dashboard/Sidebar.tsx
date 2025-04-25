@@ -44,15 +44,12 @@ export default function SideBar() {
   useEffect(() => {
     // If the user is on mobile view, stretch the sidebar to full width
     if (isMobileView) {
-      //stretch the sidebar
-      setOpenSideBar(true);
-      //hide the sidebar
-      setShowSideBar(false);
+      setOpenSideBar(true); // Stretch the sidebar
+      setShowSideBar(false); // Hide the sidebar
     } else {
-      //If the user is not on mobile view, show the sidebar
-      setShowSideBar(true);
+      setShowSideBar(true); // Show the sidebar
     }
-  }, [isMobileView]);
+  }, [isMobileView, setOpenSideBar, setShowSideBar]); // Added missing dependencies
 
   return (
     <div

@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
-  throw new Error("Please define the MONGODB_URI environment variable in .env.local");
+  throw new Error("MONGODB_URI is not defined in the environment variables");
 }
 
 // Custom global interface (no `extends typeof globalThis`)

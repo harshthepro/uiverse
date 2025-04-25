@@ -458,6 +458,63 @@ export function ComponentEditor() {
     return null;
   };
 
+  const [activeTab, setActiveTab] = useState("preview"); // State to track active tab
+
+  const renderActiveTab = () => {
+    if (activeTab === "preview") {
+      return renderPreview();
+    } else if (activeTab === "jsx") {
+      return (
+        <AceEditor
+          ref={aceEditorRef}
+          onLoad={(editorInstance) => {
+            editorInstanceRef.current = editorInstance;
+          }}
+          mode={language} // Dynamically set the mode
+          theme="tomorrow"
+          onChange={handleChange}
+          name="codeEditor"
+          value={code}
+          editorProps={{ $blockScrolling: true }}
+          setOptions={{
+            enableBasicAutocompletion: true,
+            enableLiveAutocompletion: true,
+            enableSnippets: true,
+            showLineNumbers: true,
+            tabSize: 2,
+          }}
+          fontSize={14}
+          width="100%"
+          height="440px"
+        />
+      );
+    } else if (activeTab === "visual" && mediaFile) {
+      const fileURL = URL.createObjectURL(mediaFile);
+      return (
+        <div className="mt-4">
+          {mediaFile.type.startsWith("image/") ? (
+            <img
+              src={fileURL}
+              alt="Uploaded Visual"
+              className="w-full h-auto object-contain border rounded-md"
+            />
+          ) : mediaFile.type.startsWith("video/") ? (
+            <video
+              controls
+              src={fileURL}
+              className="w-full h-auto object-contain border rounded-md"
+            />
+          ) : (
+            <div className="text-gray-500 p-4">
+              Unsupported media type. Please upload an image or video.
+            </div>
+          )}
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div
       style={{ display: openComponentEditor ? "flex" : "none" }}
@@ -609,8 +666,35 @@ export function ComponentEditor() {
       </div>
       {/* Right Part */}
       <div className=" w-1/2 max-sm:w-full max-sm:border-t border-l max-sm:mt-5 border-slate-100 h-full">
-        {renderPreview()}
-        {renderVisualSection()}
+        {/* Tab Buttons */}
+        <div className="flex gap-2 p-4">
+          <button
+            onClick={() => setActiveTab("preview")}
+            className={`px-4 py-2 rounded-md ${
+              activeTab === "preview" ? "bg-sky-500 text-white" : "bg-gray-200"
+            }`}
+          >
+            Preview
+          </button>
+          <button
+            onClick={() => setActiveTab("jsx")}
+            className={`px-4 py-2 rounded-md ${
+              activeTab === "jsx" ? "bg-sky-500 text-white" : "bg-gray-200"
+            }`}
+          >
+            JSX
+          </button>
+          <button
+            onClick={() => setActiveTab("visual")}
+            className={`px-4 py-2 rounded-md ${
+              activeTab === "visual" ? "bg-sky-500 text-white" : "bg-gray-200"
+            }`}
+          >
+            Visual
+          </button>
+        </div>
+        {/* Active Tab Content */}
+        {renderActiveTab()}
       </div>
     </div>
   );
