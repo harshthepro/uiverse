@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import { LiveProvider, LiveError, LivePreview } from "react-live";
@@ -323,6 +322,7 @@ export function ComponentEditor() {
   };
 
   const [language, setLanguage] = useState("jsx"); // Default language is JSX
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
 
   const languageModes = {
     jsx: "jsx",
@@ -336,61 +336,132 @@ export function ComponentEditor() {
     setLanguage(event.target.value);
   };
 
+  const handleMediaUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setMediaFile(file);
+    }
+  };
+
   const renderPreview = () => {
-    if (language === "jsx" || language === "javascript") {
-      return (
-        <LiveProvider code={code} noInline={false}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <LiveError className="rounded-lg border-gray-200 p-4 text-red-600" />
-            <LivePreview className="rounded-lg border-gray-200 p-4" />
-          </div>
-        </LiveProvider>
-      );
-    } else if (language === "html") {
-      return (
-        <iframe
-          className="w-full h-full border rounded-md"
-          srcDoc={code}
-          sandbox="allow-scripts"
-          title="HTML Preview"
-        />
-      );
-    } else if (language === "css") {
-      return (
-        <iframe
-          className="w-full h-full border rounded-md"
-          title="CSS Preview"
-          srcDoc={`<style>${code}</style><div>CSS Preview</div>`}
-        />
-      );
-    } else if (language === "json") {
-      try {
-        const formattedJson = JSON.stringify(JSON.parse(code), null, 2);
+    if (mediaFile) {
+      const fileURL = URL.createObjectURL(mediaFile);
+      if (mediaFile.type.startsWith("image/")) {
         return (
-          <pre className="w-full h-full border rounded-md p-4 bg-gray-100 overflow-auto">
-            {formattedJson}
-          </pre>
+          <img
+            src={fileURL}
+            alt="Uploaded Preview"
+            className="w-full h-full object-contain border rounded-md"
+          />
         );
-      } catch (error) {
+      } else if (mediaFile.type.startsWith("video/")) {
         return (
-          <div className="text-red-600 p-4">
-            Invalid JSON: {(error as Error).message}
+          <video
+            controls
+            src={fileURL}
+            className="w-full h-full object-contain border rounded-md"
+          />
+        );
+      } else {
+        return (
+          <div className="text-gray-500 p-4">
+            Unsupported media type. Please upload an image or video.
           </div>
         );
       }
-    } else {
+    }
+
+    try {
+      if (language === "jsx" || language === "javascript") {
+        return (
+          <LiveProvider code={code} noInline={false}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <LiveError className="rounded-lg border-gray-200 p-4 text-red-600" />
+              <LivePreview className="rounded-lg border-gray-200 p-4" />
+            </div>
+          </LiveProvider>
+        );
+      } else if (language === "html") {
+        return (
+          <iframe
+            className="w-full h-full border rounded-md"
+            srcDoc={code}
+            sandbox="allow-scripts"
+            title="HTML Preview"
+          />
+        );
+      } else if (language === "css") {
+        return (
+          <iframe
+            className="w-full h-full border rounded-md"
+            title="CSS Preview"
+            srcDoc={`<style>${code}</style><div>CSS Preview</div>`}
+          />
+        );
+      } else if (language === "json") {
+        try {
+          const formattedJson = JSON.stringify(JSON.parse(code), null, 2);
+          return (
+            <pre className="w-full h-full border rounded-md p-4 bg-gray-100 overflow-auto">
+              {formattedJson}
+            </pre>
+          );
+        } catch (error) {
+          return (
+            <div className="text-red-600 p-4">
+              Invalid JSON: {(error as Error).message}
+            </div>
+          );
+        }
+      } else {
+        return (
+          <div className="text-gray-500 p-4">
+            Preview not supported for this language.
+          </div>
+        );
+      }
+    } catch (error) {
       return (
-        <div className="text-gray-500 p-4">
-          Preview not supported for this language.
+        <div className="text-red-600 p-4">
+          Error rendering preview: {(error as Error).message}
         </div>
       );
     }
   };
 
+  const renderVisualSection = () => {
+    if (mediaFile) {
+      const fileURL = URL.createObjectURL(mediaFile);
+      return (
+        <div className="mt-4">
+          <h3 className="text-lg font-semibold mb-2">Visual</h3>
+          {mediaFile.type.startsWith("image/") ? (
+            <img
+              src={fileURL}
+              alt="Uploaded Visual"
+              className="w-full h-auto object-contain border rounded-md"
+            />
+          ) : mediaFile.type.startsWith("video/") ? (
+            <video
+              controls
+              src={fileURL}
+              className="w-full h-auto object-contain border rounded-md"
+            />
+          ) : (
+            <div className="text-gray-500 p-4">
+              Unsupported media type. Please upload an image or video.
+            </div>
+          )}
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div
       style={{ display: openComponentEditor ? "flex" : "none" }}
-      className="w-[96%] h-[735px] max-sm:h-[90%]   max-sm:flex-col  border-slate-100    flex-row overflow-hidden bg-white absolute left-1/2 top-2 rounded-2xl shadow-md -translate-x-1/2 z-50"
+      className="w-[96%] h-[735px] max-sm:h-[90%] max-sm:flex-col border-slate-100 flex-row overflow-hidden bg-white absolute left-1/2 top-2 rounded-2xl shadow-md -translate-x-1/2 z-50"
     >
       {/* Left Part */}
       <div className="w-1/2 max-sm:w-full  h-full">
@@ -472,6 +543,17 @@ export function ComponentEditor() {
           </div>
         </div>
 
+        {/* Media Upload */}
+        <div className="flex flex-col gap-2 pt-6 px-8">
+          <label className="text-[13px] font-semibold">Attach Media:</label>
+          <input
+            type="file"
+            accept="image/*,video/*"
+            onChange={handleMediaUpload}
+            className="text-[12px] border rounded-md p-[5px]"
+          />
+        </div>
+
         {/* Input Code */}
         <div className=" flex flex-col gap-2 pt-6 px-8 ">
           <div className="flex justify-between">
@@ -528,6 +610,7 @@ export function ComponentEditor() {
       {/* Right Part */}
       <div className=" w-1/2 max-sm:w-full max-sm:border-t border-l max-sm:mt-5 border-slate-100 h-full">
         {renderPreview()}
+        {renderVisualSection()}
       </div>
     </div>
   );

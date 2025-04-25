@@ -113,7 +113,7 @@ export default function SideBar() {
         {openSideBar && (
           <div className="flex gap-1 text-[23px] ">
             <span className={`font-bold text-sky-500`}>UI</span>
-            <span className="text-slate-600">Shelf</span>
+            <span className="text-slate-600">verse</span>
           </div>
         )}
       </div>
