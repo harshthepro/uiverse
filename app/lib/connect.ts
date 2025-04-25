@@ -7,13 +7,12 @@ if (!MONGODB_URI) {
   throw new Error("MONGODB_URI is not defined in the environment variables");
 }
 
-// Custom global interface (no `extends typeof globalThis`)
 interface MongooseCache {
   conn: typeof mongoose | null;
   promise: Promise<typeof mongoose> | null;
 }
 
-// Type-safe access to global object
+// Reusing global mongoose connection in development to avoid hot-reload issues
 const globalWithMongoose = global as unknown as { mongoose: MongooseCache };
 
 if (!globalWithMongoose.mongoose) {
@@ -26,7 +25,7 @@ async function connect() {
   }
 
   if (!globalWithMongoose.mongoose.promise) {
-    globalWithMongoose.mongoose.promise = mongoose.connect(MONGODB_URI).then((mongoose) => mongoose);
+    globalWithMongoose.mongoose.promise = mongoose.connect(MONGODB_URI!).then((m) => m);
   }
 
   globalWithMongoose.mongoose.conn = await globalWithMongoose.mongoose.promise;
