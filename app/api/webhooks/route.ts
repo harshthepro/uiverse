@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { EmailAddress, WebhookEvent } from "@clerk/nextjs/server";
 
 import User from "../../Models/UserSchema";
-import { connect } from "../../lib/connect";
+import connect from "../../lib/connect"; // Corrected import
 
 export async function POST(req: Request) {
   // You can find this in the Clerk Dashboard -> Webhooks -> choose the endpoint
@@ -65,10 +65,12 @@ export async function POST(req: Request) {
     };
 
     try {
-      await connect();
+      await connect(); // Ensure the database connection is established
       await User.create(newUser);
       console.log("user created");
-    } catch (error) {}
+    } catch (error) {
+      console.error("Error creating user:", error); // Add error logging
+    }
   }
   console.log(`Webhook with and ID of ${id} and type of ${eventType}`);
   console.log("Webhook body:", body);
